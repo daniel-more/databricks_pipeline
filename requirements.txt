@@ -16,8 +16,8 @@ python-dotenv
 # pytest-mock
 
 # --- CI/CD: Databricks SDK + Bundles ---
-databricks-sdk
-databricks-cli
+# databricks-sdk
+# databricks-cli
 
 # --- Utility Libraries ---
 requests
