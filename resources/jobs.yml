@@ -17,7 +17,7 @@ resources:
 
         - task_key: Data_Ingestion
           notebook_task:
-            notebook_path: ./notebooks/01_ingest_kaggle
+            notebook_path: ../notebooks/01_ingest_kaggle
             source: WORKSPACE
           environment_key: Dev
 
