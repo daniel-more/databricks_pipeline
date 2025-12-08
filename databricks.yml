@@ -4,9 +4,10 @@ bundle:
 include:
   - resources/*.yml
 
-# Default workspace settings (can be overridden per target)
+# Default workspace settings (shared across targets)
 workspace:
-  root_path: /Workspace/Repos/${workspace.current_user}/cscie103-final-project
+  # Use current user + target in path, following Databricks bundle examples
+  root_path: /Workspace/Repos/${workspace.current_user}/cscie103-final-project-${bundle.target}
 
 # Multi-environment setup, as expected by DATABRICKS_BUNDLE_ENV=dev/prod
 targets:
@@ -14,11 +15,7 @@ targets:
     default: true
     workspace:
       host: https://dbc-2717eb51-11b4.cloud.databricks.com
-      # Optionally override root_path for dev
-      root_path: /Workspace/Repos/${workspace.current_user}/cscie103-final-project-dev
 
   prod:
     workspace:
       host: https://dbc-2717eb51-11b4.cloud.databricks.com
-      # Optionally override root_path for prod
-      root_path: /Workspace/Repos/${workspace.current_user}/cscie103-final-project-prod
