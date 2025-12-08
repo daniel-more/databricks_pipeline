@@ -12,7 +12,7 @@ resources:
       tasks:
         - task_key: task
           spark_python_task:
-            python_file: ./src/main.py
+            python_file: ../src/main.py
           environment_key: Dev
 
         - task_key: Data_Ingestion
