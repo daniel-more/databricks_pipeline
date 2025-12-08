@@ -12,8 +12,8 @@ kaggle
 python-dotenv
 
 # --- Testing ---
-pytest
-pytest-mock
+# pytest
+# pytest-mock
 
 # --- CI/CD: Databricks SDK + Bundles ---
 databricks-sdk

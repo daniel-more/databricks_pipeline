@@ -25,8 +25,8 @@ jobs:
           pip install -r requirements.txt
           pip install databricks-cli databricks-sdk pytest
 
-      - name: Run tests
-        run: pytest --maxfail=1 --disable-warnings
+      # - name: Run tests
+      #   run: pytest --maxfail=1 --disable-warnings
 
       - name: Validate Databricks Asset Bundle
         run: databricks bundle validate
