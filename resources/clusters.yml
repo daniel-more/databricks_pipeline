@@ -1,0 +1,5 @@
+resources:
+  clusters:
+    main_cluster:
+      serverless: true
+      num_workers: 1

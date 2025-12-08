@@ -1,6 +1,9 @@
 bundle:
   name: cscie103-final-project
 
+include:
+  - resources/*.yml
+
 # Default workspace settings (can be overridden per target)
 workspace:
   root_path: /Workspace/Repos/${workspace.current_user}/cscie103-final-project
@@ -19,40 +22,3 @@ targets:
       host: https://dbc-2717eb51-11b4.cloud.databricks.com
       # Optionally override root_path for prod
       root_path: /Workspace/Repos/${workspace.current_user}/cscie103-final-project-prod
-
-resources:
-  jobs:
-    medallion_pipeline:
-      name: "Medallion Pipeline"
-      tasks:
-        - task_key: ingest_kaggle
-          notebook_path: ./notebooks/01_ingest_kaggle.ipynb
-          job_cluster_key: main_cluster
-
-        # Uncomment these as you implement each stage
-        # - task_key: bronze_to_silver
-        #   depends_on: [{ task_key: ingest_kaggle }]
-        #   notebook_path: ./notebooks/02_bronze_to_silver.py
-        #   job_cluster_key: main_cluster
-        #
-        # - task_key: silver_to_gold
-        #   depends_on: [{ task_key: bronze_to_silver }]
-        #   notebook_path: ./notebooks/03_silver_to_gold.py
-        #   job_cluster_key: main_cluster
-        #
-        # - task_key: evaluate_model
-        #   depends_on: [{ task_key: silver_to_gold }]
-        #   notebook_path: ./notebooks/05_evaluate_model.py
-        #   job_cluster_key: main_cluster
-        #
-        # - task_key: train_model
-        #   depends_on: [{ task_key: evaluate_model }]
-        #   run_if: "{{job.taskValues.get('evaluate_model','should_train','false') == 'true'}}"
-        #   notebook_path: ./notebooks/04_train_model.py
-        #   job_cluster_key: main_cluster
-
-  clusters:
-    main_cluster:
-      spark_version: "14.3.x-scala2.12"
-      node_type_id: "i3.xlarge"
-      num_workers: 2

@@ -1,0 +1,30 @@
+resources:
+  jobs:
+    final-project-Pipeline:
+      name: "final-project Pipeline"
+      tasks:
+        - task_key: ingest_kaggle
+          notebook_path: ./notebooks/01_ingest_kaggle.ipynb
+          job_cluster_key: main_cluster
+
+        # Uncomment as you implement
+        # - task_key: bronze_to_silver
+        #   depends_on: [{ task_key: ingest_kaggle }]
+        #   notebook_path: ./notebooks/02_bronze_to_silver.py
+        #   job_cluster_key: main_cluster
+        #
+        # - task_key: silver_to_gold
+        #   depends_on: [{ task_key: bronze_to_silver }]
+        #   notebook_path: ./notebooks/03_silver_to_gold.py
+        #   job_cluster_key: main_cluster
+        #
+        # - task_key: evaluate_model
+        #   depends_on: [{ task_key: silver_to_gold }]
+        #   notebook_path: ./notebooks/05_evaluate_model.py
+        #   job_cluster_key: main_cluster
+        #
+        # - task_key: train_model
+        #   depends_on: [{ task_key: evaluate_model }]
+        #   run_if: "{{job.taskValues.get('evaluate_model','should_train','false') == 'true'}}"
+        #   notebook_path: ./notebooks/04_train_model.py
+        #   job_cluster_key: main_cluster
