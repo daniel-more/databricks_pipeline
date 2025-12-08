@@ -28,5 +28,10 @@ jobs:
       # - name: Run tests
       #   run: pytest --maxfail=1 --disable-warnings
 
+      - name: Install Databricks CLI (new v1)
+        run: |
+          pip install databricks
+          pip install databricks-sdk
+          
       - name: Validate Databricks Asset Bundle
         run: databricks bundle validate
