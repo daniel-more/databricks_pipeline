@@ -11,12 +11,12 @@ resources:
       tasks:
         - task_key: run_python_task
           spark_python_task:
-            python_file: ./src/main.py
+            python_file: ../src/main.py
           environment_key: ${bundle.target}
 
         - task_key: data_ingestion
           notebook_task:
-            notebook_path: ./notebooks/01_ingest_kaggle.ipynb
+            notebook_path: ../notebooks/01_ingest_kaggle.ipynb
             source: WORKSPACE
           environment_key: ${bundle.target}
 
