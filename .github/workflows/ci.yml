@@ -66,5 +66,5 @@ jobs:
         working-directory: .
         env:
           DATABRICKS_HOST: "https://dbc-2717eb51-11b4.cloud.databricks.com" # ${{ secrets.DATABRICKS_HOST }}
-          DATABRICKS_TOKEN: "dapi0b90879f3db4fa2b0e57cc68ee849fd6" # ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_TOKEN: "dapi0b90879f3db4fa2b0e57cc68ee849fd6" # # ${{ secrets.DATABRICKS_TOKEN }}
           DATABRICKS_BUNDLE_ENV: dev
