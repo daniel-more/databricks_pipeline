@@ -1,34 +1,40 @@
 resources:
   jobs:
     finalProject_pipeline:
-      name: "Final Project Pipeline"
+      name: "Final Project Pipeline - ${bundle.target}"
 
-      # Run this job once every 24 hours.
       trigger:
         periodic:
           interval: 24
           unit: HOURS
 
       tasks:
-        - task_key: task
+        - task_key: run_python_task
           spark_python_task:
-            python_file: ../src/main.py
-          environment_key: Dev
+            python_file: ./src/main.py
+          environment_key: ${bundle.target}
 
-        - task_key: Data_Ingestion
+        - task_key: data_ingestion
           notebook_task:
-            notebook_path: ../notebooks/01_ingest_kaggle.ipynb
+            notebook_path: ./notebooks/01_ingest_kaggle.ipynb
             source: WORKSPACE
-          environment_key: Dev
+          environment_key: ${bundle.target}
 
       queue:
         enabled: true
 
       environments:
-        - environment_key: Dev
+        - environment_key: dev
           spec:
             environment_version: "4"
             dependencies:
               - cowsay
+
+        - environment_key: prod
+          spec:
+            environment_version: "4"
+            dependencies:
+              - cowsay
+              # Add prod-grade dependencies here
 
       performance_target: PERFORMANCE_OPTIMIZED
