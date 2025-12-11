@@ -26,8 +26,8 @@ jobs:
 
       - name: Sync GitHub → Databricks Repo
         env:
-          DATABRICKS_HOST: "https://dbc-2717eb51-11b4.cloud.databricks.com" # ${{ secrets.DATABRICKS_HOST }}
-          DATABRICKS_TOKEN: "dapi0b90879f3db4fa2b0e57cc68ee849fd6" # # ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_HOST: "https://dbc-80b67b69-d5ca.cloud.databricks.com"
+          DATABRICKS_TOKEN: "dapi987cbb78ad45d4640cdc51af191dc63d"
         run: |
           databricks repos update --path /Repos/sayedsaadmvp@gmail.com/csci-e103-finalproject --branch master
 
@@ -35,8 +35,8 @@ jobs:
 
       - name: Deploy Bundle to Workspace
         env:
-          DATABRICKS_HOST: "https://dbc-2717eb51-11b4.cloud.databricks.com" # ${{ secrets.DATABRICKS_HOST }}
-          DATABRICKS_TOKEN: "dapi0b90879f3db4fa2b0e57cc68ee849fd6" # # ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_HOST: "https://dbc-80b67b69-d5ca.cloud.databricks.com"
+          DATABRICKS_TOKEN: "dapi987cbb78ad45d4640cdc51af191dc63d"
         run: |
           databricks bundle deploy
           databricks bundle run finalProject_pipeline
