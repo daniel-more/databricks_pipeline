@@ -25,7 +25,7 @@ resources:
           depends_on:
             - task_key: data_download
           notebook_task:
-            notebook_path: ../notebooks/02-ingest-bronze-tier.ipynb
+            notebook_path: ../notebooks/02-exploratory-data-analysis-bronze.ipynb
             source: WORKSPACE
           environment_key: ${bundle.target}
         
@@ -34,7 +34,7 @@ resources:
           depends_on:
             - task_key: bronze_data
           notebook_task:
-            notebook_path: ../notebooks/03-ingest-silver-tier.ipynb
+            notebook_path: ../notebooks/03-exploratory-data-analysis-silver.ipynb
             source: WORKSPACE
           environment_key: ${bundle.target}
         
