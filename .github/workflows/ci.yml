@@ -46,14 +46,14 @@ jobs:
         working-directory: .
         env:
           # sayed
-          DATABRICKS_HOST: "https://dbc-2717eb51-11b4.cloud.databricks.com" # ${{ secrets.DATABRICKS_HOST }}
-          DATABRICKS_TOKEN: "dapi0b90879f3db4fa2b0e57cc68ee849fd6" # # ${{ secrets.DATABRICKS_TOKEN }}
+          # DATABRICKS_HOST: ${{ secrets.SAYED_DATABRICKS_HOST }}
+          # DATABRICKS_TOKEN: ${{ secrets.SAYED_DATABRICKS_TOKEN }}
           # alex
-          # DATABRICKS_HOST: "https://dbc-80b67b69-d5ca.cloud.databricks.com"
-          # DATABRICKS_TOKEN: "dapi987cbb78ad45d4640cdc51af191dc63d"
+          DATABRICKS_HOST: ${{ secrets.ALEX_DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.ALEX_DATABRICKS_TOKEN }}
           # daniel
-          # DATABRICKS_HOST: "https://dbc-f37ae718-1631.cloud.databricks.com" # ${{ secrets.DATABRICKS_HOST }}
-          # DATABRICKS_TOKEN: "dapi0b90879f3db4fa2b0e57cc68ee849fd6" # # ${{ secrets.DATABRICKS_TOKEN }}
+          # DATABRICKS_HOST: ${{ secrets.DANIEL_DATABRICKS_HOST }}
+          # DATABRICKS_TOKEN: ${{ secrets.DANIEL_DATABRICKS_TOKEN }}
 
           DATABRICKS_BUNDLE_ENV: dev
   
@@ -74,13 +74,13 @@ jobs:
         working-directory: .
         env:
           # sayed
-          DATABRICKS_HOST: "https://dbc-2717eb51-11b4.cloud.databricks.com" # ${{ secrets.DATABRICKS_HOST }}
-          DATABRICKS_TOKEN: "dapi0b90879f3db4fa2b0e57cc68ee849fd6" # # ${{ secrets.DATABRICKS_TOKEN }}
+          # DATABRICKS_HOST: ${{ secrets.SAYED_DATABRICKS_HOST }}
+          # DATABRICKS_TOKEN: ${{ secrets.SAYED_DATABRICKS_TOKEN }}
           # alex
-          # DATABRICKS_HOST: "https://dbc-80b67b69-d5ca.cloud.databricks.com"
-          # DATABRICKS_TOKEN: "dapi987cbb78ad45d4640cdc51af191dc63d"
+          DATABRICKS_HOST: ${{ secrets.ALEX_DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.ALEX_DATABRICKS_TOKEN }}
           # daniel
-          # DATABRICKS_HOST: "https://dbc-f37ae718-1631.cloud.databricks.com" # ${{ secrets.DATABRICKS_HOST }}
-          # DATABRICKS_TOKEN: "dapi0b90879f3db4fa2b0e57cc68ee849fd6" # # ${{ secrets.DATABRICKS_TOKEN }}
+          # DATABRICKS_HOST: ${{ secrets.DANIEL_DATABRICKS_HOST }}
+          # DATABRICKS_TOKEN: ${{ secrets.DANIEL_DATABRICKS_TOKEN }}
 
           DATABRICKS_BUNDLE_ENV: dev

@@ -14,13 +14,7 @@ workspace:
 targets:
   dev:
     default: true
-    workspace:
-      host: https://dbc-2717eb51-11b4.cloud.databricks.com # sayed
-      # host: https://dbc-f37ae718-1631.cloud.databricks.com # daniel
-      # host: https://dbc-80b67b69-d5ca.cloud.databricks.com # alex
+    # host is set via DATABRICKS_HOST environment variable in GitHub Actions
 
   prod:
-    workspace:
-      host: https://dbc-2717eb51-11b4.cloud.databricks.com # sayed
-      # host: https://dbc-f37ae718-1631.cloud.databricks.com # daniel
-      # host: https://dbc-80b67b69-d5ca.cloud.databricks.com # alex
+    # host is set via DATABRICKS_HOST environment variable in GitHub Actions
