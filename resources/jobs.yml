@@ -46,6 +46,15 @@ resources:
             notebook_path: ../notebooks/04-exploratory-data-analysis-gold.ipynb
             source: WORKSPACE
           environment_key: ${bundle.target}
+        
+        # MLflow model training
+        - task_key: mlflow_training
+          depends_on:
+            - task_key: gold_data
+          notebook_task:
+            notebook_path: ../notebooks/05-mlflow-training.ipynb
+            source: WORKSPACE
+          environment_key: ${bundle.target}
 
       queue:
         enabled: true
