@@ -39,11 +39,11 @@ jobs:
           # DATABRICKS_HOST: ${{ secrets.SAYED_DATABRICKS_HOST }}
           # DATABRICKS_TOKEN: ${{ secrets.SAYED_DATABRICKS_TOKEN }}
           # alex
-          DATABRICKS_HOST: ${{ secrets.ALEX_DATABRICKS_HOST }}
-          DATABRICKS_TOKEN: ${{ secrets.ALEX_DATABRICKS_TOKEN }}
+          # DATABRICKS_HOST: ${{ secrets.ALEX_DATABRICKS_HOST }}
+          # DATABRICKS_TOKEN: ${{ secrets.ALEX_DATABRICKS_TOKEN }}
           # daniel
-          # DATABRICKS_HOST: ${{ secrets.DANIEL_DATABRICKS_HOST }}
-          # DATABRICKS_TOKEN: ${{ secrets.DANIEL_DATABRICKS_TOKEN }}
+          DATABRICKS_HOST: ${{ secrets.DANIEL_DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DANIEL_DATABRICKS_TOKEN }}
 
           DATABRICKS_BUNDLE_ENV: prod
   
