@@ -47,7 +47,7 @@ resources:
             source: WORKSPACE
           environment_key: ${bundle.target}
         
-        05-mlflow-training
+        # 05-mlflow-training
         - task_key: mlflow_training
           depends_on:
             - task_key: silver_data
