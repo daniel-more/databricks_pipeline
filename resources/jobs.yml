@@ -21,40 +21,40 @@ resources:
           environment_key: ${bundle.target}
 
         # 02-exploratory-data-analysis-bronze
-        - task_key: bronze_data
+        - task_key: bronze_tier
           depends_on:
             - task_key: data_download
           notebook_task:
-            notebook_path: ../notebooks/02-exploratory-data-analysis-bronze.ipynb
+            notebook_path: ../notebooks/02-bronze-tier.ipynb
             source: WORKSPACE
           environment_key: ${bundle.target}
         
         # 03-exploratory-data-analysis-silver
-        - task_key: silver_data
+        - task_key: silver_tier
           depends_on:
-            - task_key: bronze_data
+            - task_key: bronze_tier
           notebook_task:
-            notebook_path: ../notebooks/03-exploratory-data-analysis-silver.ipynb
+            notebook_path: ../notebooks/03-silver-tier.ipynb
             source: WORKSPACE
           environment_key: ${bundle.target}
-        
-        # 04-exploratory-data-analysis-gold
-        - task_key: gold_data
-          depends_on:
-            - task_key: silver_data
-          notebook_task:
-            notebook_path: ../notebooks/04-exploratory-data-analysis-gold.ipynb
-            source: WORKSPACE
-          environment_key: ${bundle.target}
-        
+
         # 05-mlflow-training
-        # - task_key: mlflow_training
-        #   depends_on:
-        #     - task_key: gold_data
-        #   notebook_task:
-        #     notebook_path: ../notebooks/05-mlflow-training.ipynb
-        #     source: WORKSPACE
-        #   environment_key: ${bundle.target}
+        - task_key: mlflow_training
+          depends_on:
+            - task_key: silver_tier
+          notebook_task:
+            notebook_path: ../notebooks/04-mlflow-training.ipynb
+            source: WORKSPACE
+          environment_key: ${bundle.target}
+
+        # 04-exploratory-data-analysis-gold
+        - task_key: gold_data_insights
+          depends_on:
+            - task_key: silver_tier
+          notebook_task:
+            notebook_path: ../notebooks/04-gold-tier-data-insights.ipynb
+            source: WORKSPACE
+          environment_key: ${bundle.target}
 
       queue:
         enabled: true
