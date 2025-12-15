@@ -48,12 +48,14 @@ jobs:
           # sayed
           # DATABRICKS_HOST: ${{ secrets.SAYED_DATABRICKS_HOST }}
           # DATABRICKS_TOKEN: ${{ secrets.SAYED_DATABRICKS_TOKEN }}
+          DATABRICKS_HOST: "https://dbc-2717eb51-11b4.cloud.databricks.com" # ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: "dapi4455c2a30719077bf142f277b7ab73b4" # ${{ secrets.DATABRICKS_TOKEN }}
           # alex
           # DATABRICKS_HOST: ${{ secrets.ALEX_DATABRICKS_HOST }}
           # DATABRICKS_TOKEN: ${{ secrets.ALEX_DATABRICKS_TOKEN }}
           # daniel
-          DATABRICKS_HOST: ${{ secrets.DANIEL_DATABRICKS_HOST }} #to run
-          DATABRICKS_TOKEN: ${{ secrets.DANIEL_DATABRICKS_TOKEN }}
+          # DATABRICKS_HOST: ${{ secrets.DANIEL_DATABRICKS_HOST }} #to run
+          # DATABRICKS_TOKEN: ${{ secrets.DANIEL_DATABRICKS_TOKEN }}
 
           DATABRICKS_BUNDLE_ENV: dev
   
@@ -76,11 +78,13 @@ jobs:
           # sayed
           # DATABRICKS_HOST: ${{ secrets.SAYED_DATABRICKS_HOST }}
           # DATABRICKS_TOKEN: ${{ secrets.SAYED_DATABRICKS_TOKEN }}
+          DATABRICKS_HOST: "https://dbc-2717eb51-11b4.cloud.databricks.com" # ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: "dapi4455c2a30719077bf142f277b7ab73b4" # ${{ secrets.DATABRICKS_TOKEN }}
           # alex
           # DATABRICKS_HOST: ${{ secrets.ALEX_DATABRICKS_HOST }}
           # DATABRICKS_TOKEN: ${{ secrets.ALEX_DATABRICKS_TOKEN }}
           # daniel
-          DATABRICKS_HOST: ${{ secrets.DANIEL_DATABRICKS_HOST }}
-          DATABRICKS_TOKEN: ${{ secrets.DANIEL_DATABRICKS_TOKEN }}
+          # DATABRICKS_HOST: ${{ secrets.DANIEL_DATABRICKS_HOST }}
+          # DATABRICKS_TOKEN: ${{ secrets.DANIEL_DATABRICKS_TOKEN }}
 
           DATABRICKS_BUNDLE_ENV: dev

@@ -3,6 +3,7 @@ bundle:
 
 include:
   - resources/*.yml
+  
 
 # Default workspace settings (shared across targets)
 workspace:
