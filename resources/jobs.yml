@@ -25,7 +25,7 @@ resources:
           depends_on:
             - task_key: data_download
           notebook_task:
-            notebook_path: ../notebooks/02-exploratory-data-analysis-bronze.ipynb
+            notebook_path: ../notebooks/02-bronze-tier.ipynb
             source: WORKSPACE
           environment_key: ${bundle.target}
         
@@ -34,11 +34,10 @@ resources:
           depends_on:
             - task_key: Data_Ingestion_Bronze
           notebook_task:
-            notebook_path: ../notebooks/03-exploratory-data-analysis-silver.ipynb
+            notebook_path: ../notebooks/03-silver-tier.ipynb
             source: WORKSPACE
           environment_key: ${bundle.target}
         
-        # 03-Oil_data_Streaming_Silver
         # 04-exploratory-data-analysis-gold
         - task_key: Stream_Oil_Prices
           depends_on:
@@ -53,18 +52,36 @@ resources:
           depends_on:
             - task_key: Data_Cleansing_Silver
           notebook_task:
-            notebook_path: ../notebooks/05-mlflow-training.ipynb
+            notebook_path: ../notebooks/04-mlflow-training.ipynb
             source: WORKSPACE
           environment_key: ${bundle.target}
 
         # 04-exploratory-data-analysis-gold
-        - task_key: gold_data
+        - task_key: Data_Insights_Gold
           depends_on:
             - task_key: Data_Cleansing_Silver
             - task_key: Stream_Oil_Prices
             - task_key: mlflow_training_Serving
           notebook_task:
-            notebook_path: ../notebooks/04-exploratory-data-analysis-gold.ipynb
+            notebook_path: ../notebooks/04-gold-tier-data-insights.ipynb
+            source: WORKSPACE
+          environment_key: ${bundle.target}
+
+        # 05-platinum-tables
+        - task_key: platinum_data_insights
+          depends_on:
+            - task_key: mlflow_training_Serving
+          notebook_task:
+            notebook_path: ../notebooks/05-platinum-tier.ipynb
+            source: WORKSPACE
+          environment_key: ${bundle.target}
+
+        # 06-permissions
+        - task_key: Security_Access_Permissions
+          depends_on:
+            - task_key: Data_Insights_Gold
+          notebook_task:
+            notebook_path: ../notebooks/06-permissions.ipynb
             source: WORKSPACE
           environment_key: ${bundle.target}
 
