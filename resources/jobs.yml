@@ -48,11 +48,20 @@ resources:
           environment_key: ${bundle.target}
  
         # 05-mlflow-training
-        - task_key: mlflow_training_Serving
+        - task_key: mlflow_training
           depends_on:
             - task_key: Data_Cleansing_Silver
           notebook_task:
             notebook_path: ../notebooks/04-mlflow-training.ipynb
+            source: WORKSPACE
+          environment_key: ${bundle.target}
+
+        # 05-mlflow-SERVING
+        - task_key: mlflow_Serving
+          depends_on:
+            - task_key: mlflow_training
+          notebook_task:
+            notebook_path: ../notebooks/04-mlflow-select-best-model-predict.ipynb
             source: WORKSPACE
           environment_key: ${bundle.target}
 
