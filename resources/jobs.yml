@@ -57,7 +57,7 @@ resources:
           environment_key: ${bundle.target}
 
         # 05-mlflow-SERVING
-        - task_key: mlflow_training_Serving
+        - task_key: mlflow_Serving
           depends_on:
             - task_key: mlflow_training
           notebook_task:
