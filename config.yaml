@@ -1,0 +1,7 @@
+databricks:
+  catalog: portfolio_catalog
+  schema: databricks_pipeline
+  volume: data
+
+local:
+  base_path: ./data
