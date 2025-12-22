@@ -1,7 +1,27 @@
 databricks:
   catalog: portfolio_catalog
   schema: databricks_pipeline
+  volume_path: /Volumes/portfolio_catalog/databricks_pipeline/data
   volume: data
 
 local:
   base_path: ./data
+
+
+# Table load order (tables with no dependencies first)
+load_order:
+  - stores
+  - oil
+  - holidays
+  - transactions
+  - train
+  - test
+
+# CSV filenames
+csv_files:
+  stores: stores.csv
+  oil: oil.csv
+  holidays: holidays_events.csv
+  transactions: transactions.csv
+  train: train.csv
+  test: test.csv
