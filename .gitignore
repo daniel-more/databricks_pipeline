@@ -210,3 +210,6 @@ __marimo__/
 kaggle.json
 
 notebooks/data
+scrapbook/*.png
+scrapbook/*.csv
+.DS_Store
