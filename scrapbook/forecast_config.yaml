@@ -1,0 +1,36 @@
+
+# forecast_config.yaml
+data:
+  date_col: "date"
+  target_col: "sales"
+  group_cols: ["family", "store_nbr"]     # change to ["family"] or ["store_nbr"] as needed
+  freq: "D"                                # D=Daily, W=Weekly
+  min_train_periods: 56
+
+split:
+  mode: "horizon"                          # "date" or "horizon"
+  train_end_date: ""                       # used if mode="date"
+  test_horizon: 28                         # used if mode="horizon"
+
+model:
+  type: "spark_gbt"                        # "spark_gbt" | "spark_rf" | "glm" | "prophet_local" | "arima_local"
+  params:
+    maxDepth: 7
+    maxIter: 100
+
+features:
+  lags: [1, 7, 14, 28]
+  mas:  [7, 28]                            # moving averages
+  add_time_signals: true                   # dow, week, month, etc.
+
+evaluation:
+  mase_seasonality: 7                      # use 7 for weekly seasonality on daily data
+  backtest:
+    enabled: true
+    folds: 4
+    fold_horizon: 14
+    step: 14
+
+mlflow:
+  enabled: true
+  experiment_path: "/Shared/SmartPlanning/Forecasts"
