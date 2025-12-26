@@ -161,6 +161,8 @@ def train_test_split(
 def model_factory(model_type: str, params: Dict[str, Any]):
     if model_type == "spark_gbt":
         return GBTRegressor(featuresCol="features", labelCol="label", **params)
+    if model_type == "spark_lgbt":
+        return LGBMRegressor(featuresCol="features", labelCol="label", **params)
     if model_type == "spark_rf":
         return RandomForestRegressor(featuresCol="features", labelCol="label", **params)
     if model_type == "glm":
@@ -700,3 +702,5 @@ def plot_train_test_forecast(
     plt.legend()
     plt.grid(True)
     plt.show()
+
+
