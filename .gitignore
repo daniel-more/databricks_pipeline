@@ -211,5 +211,6 @@ kaggle.json
 
 notebooks/data
 scrapbook/*.png
+notebooks/dashboard
 scrapbook/*.csv
 .DS_Store
