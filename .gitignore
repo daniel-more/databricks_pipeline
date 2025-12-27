@@ -209,6 +209,7 @@ __marimo__/
 
 kaggle.json
 
+scrapbook/notebooks/data
 notebooks/data
 scrapbook/*.png
 notebooks/dashboard
