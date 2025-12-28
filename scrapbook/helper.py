@@ -103,6 +103,14 @@ def build_features(
             .withColumn("weekofyear", F.weekofyear(F.col(date_col)))
             .withColumn("month", F.month(F.col(date_col)))
             .withColumn("year", F.year(F.col(date_col)))
+            .withColumn(
+                "is_salary_day",
+                F.when(
+                    (F.dayofmonth(F.col("date")) == 15)
+                    | (F.dayofmonth(F.col("date")) == 30),
+                    F.lit(1),
+                ).otherwise(F.lit(0)),
+            )
         )
 
     # warm-up drop
@@ -702,5 +710,3 @@ def plot_train_test_forecast(
     plt.legend()
     plt.grid(True)
     plt.show()
-
-
