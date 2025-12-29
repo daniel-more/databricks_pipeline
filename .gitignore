@@ -215,3 +215,4 @@ scrapbook/*.png
 notebooks/dashboard
 scrapbook/*.csv
 .DS_Store
+models
