@@ -179,7 +179,7 @@ def train_single_model(df_feat, cfg, model_name):
         est = model_factory(cfg["model"]["type"], cfg["model"]["params"])
         ic(est)
         model = fit_global_model(
-            train.sample(0.001),  # Use full training data!
+            train,  # Use full training data!
             cfg["data"]["target_col"],
             cfg["data"]["group_cols"],
             feature_cols,
