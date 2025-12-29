@@ -1,6 +1,9 @@
 # smartforecast/forecasting.py
+import pickle
+from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
+from mlflow.models.signature import ModelSignature, infer_signature
 from pyspark.ml import Pipeline
 from pyspark.ml.feature import OneHotEncoder, StringIndexer, VectorAssembler
 from pyspark.ml.regression import GBTRegressor, LinearRegression, RandomForestRegressor
@@ -205,6 +208,8 @@ def fit_global_model(
     group_cols: List[str],
     feature_cols: List[str],
     estimator,
+    signature_path: str = "model_signature.pkl",
+    input_example_path: str = "input_example.parquet",
 ):
     """Add label, build pipeline, fit global model."""
     train = train.withColumn("label", F.col(target_col).cast("double"))
@@ -216,6 +221,26 @@ def fit_global_model(
         estimator=estimator,
     )
     model = pipe.fit(train)
+
+    # Take a small sample for signature / input example
+    input_example = train.limit(10)
+    output_example = model.transform(input_example).select("prediction")
+
+    # Convert to pandas once
+    input_pdf = input_example.toPandas()
+    output_pdf = output_example.toPandas()
+
+    # Infer MLflow signature
+    signature = infer_signature(input_pdf, output_pdf)
+
+    # Save signature
+    Path(signature_path).parent.mkdir(parents=True, exist_ok=True)
+    with open(signature_path, "wb") as f:
+        pickle.dump(signature, f)
+
+    # Save input example for MLflow
+    input_pdf.to_parquet(input_example_path, index=False)
+
     return model
 
 
