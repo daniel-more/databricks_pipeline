@@ -1,4 +1,5 @@
 # %%
+import os
 from pathlib import Path
 
 import mlflow
@@ -124,7 +125,10 @@ def train_models_by_group(df_feat, cfg):
 
     if strategy == "global":
         # Single model for all families (current approach)
-        results["global"] = train_single_model(df_feat, cfg, "global")
+        results["global"] = train_single_model(df_feat, cfg, model_name="global")
+        ic(results["global"])
+        ic(results)
+        ic()
 
     elif strategy == "by_family":
         # One model per family
@@ -205,6 +209,30 @@ def train_single_model(df_feat, cfg, model_name):
         ic()
 
         # Log metrics
+        # by_series: Spark DataFrame with columns 'family', 'wMAPE'
+        agg_df = by_series.groupBy("family").agg(
+            F.min("wMAPE").alias("min_wMAPE"),
+            F.max("wMAPE").alias("max_wMAPE"),
+            F.expr("percentile_approx(wMAPE, 0.5)").alias("median_wMAPE"),
+        )
+
+        agg_list = agg_df.collect()  # list of Row objects
+
+        for row in agg_list:
+            family = row["family"]
+            mlflow.log_metric(f"wMAPE_min_{family}", float(row["min_wMAPE"]))
+            mlflow.log_metric(f"wMAPE_max_{family}", float(row["max_wMAPE"]))
+            mlflow.log_metric(f"wMAPE_median_{family}", float(row["median_wMAPE"]))
+
+        # for row in by_series.collect():  # collect returns a list of Row objects
+        #     ic(row)
+        #     family = row["family"]  # or row.family
+        #     ic(family)
+        #     for metric_name in ["MASE", "sMAPE", "wMAPE"]:
+        #         value = row[metric_name]  # or row.MASE etc.
+        #         ic(metric_name, value)
+        #         mlflow.log_metric(f"{metric_name}_{family}", float(value))
+
         portfolio_metrics = portfolio.first().asDict()
         ic(portfolio_metrics)
         for key, value in portfolio_metrics.items():
@@ -215,9 +243,24 @@ def train_single_model(df_feat, cfg, model_name):
 
         # Log model
         if spark.sparkContext.master.startswith("spark"):
+            ic()
             mlflow.spark.log_model(model, f"model_{model_name}")
         else:
-            print("Skipping Spark model logging (not running on Databricks)")
+            ic("Running locally")
+
+            local_path = "models/gbt_model"
+            model.write().overwrite().save(local_path)
+
+            # Databricks path
+            # dbfs_path = f"dbfs:/Users/daniel.more.torres@gmail.com/databricks_pipeline/models/{model_name}"
+            dbfs_path = f"dbfs:/Users/daniel.more.torres@gmail.com/{model_name}"
+            ic(dbfs_path)
+
+            # Upload to DBFS using databricks CLI
+            command_str = f"databricks fs cp -r {local_path} {dbfs_path}"
+            ic(command_str)
+            os.system(f"databricks fs cp -r {local_path} {dbfs_path}")
+            ic()
 
         return {
             "model": model,
@@ -252,6 +295,7 @@ with mlflow.start_run(run_name="favorita_multi_model"):
     # --- Step 3: Train model based on strategy ---
     ic("# --- Step 3: Train model based on strategy ---")
     all_results = train_models_by_group(df_feat, cfg)
+    ic()
 
     # Compare results across groups
     comparison = {}
