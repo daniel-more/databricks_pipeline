@@ -54,8 +54,8 @@ jobs:
           # DATABRICKS_HOST: ${{ secrets.ALEX_DATABRICKS_HOST }}
           # DATABRICKS_TOKEN: ${{ secrets.ALEX_DATABRICKS_TOKEN }}
           # daniel
-          DATABRICKS_HOST: ${{ secrets.DANIEL_DATABRICKS_HOST }} #to run
-          DATABRICKS_TOKEN: ${{ secrets.DANIEL_DATABRICKS_TOKEN }}
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }} #to run
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
 
           DATABRICKS_BUNDLE_ENV: dev
   
@@ -84,7 +84,7 @@ jobs:
           # DATABRICKS_HOST: ${{ secrets.ALEX_DATABRICKS_HOST }}
           # DATABRICKS_TOKEN: ${{ secrets.ALEX_DATABRICKS_TOKEN }}
           # daniel
-          DATABRICKS_HOST: ${{ secrets.DANIEL_DATABRICKS_HOST }}
-          DATABRICKS_TOKEN: ${{ secrets.DANIEL_DATABRICKS_TOKEN }}
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
 
           DATABRICKS_BUNDLE_ENV: dev
