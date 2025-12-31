@@ -1,12 +1,16 @@
 # %%
+<<<<<<< Updated upstream
 import os
+=======
+%pip install icecream
+>>>>>>> Stashed changes
 from pathlib import Path
 
 import mlflow
 import yaml
 from icecream import ic
 
-with open("config.yaml", "r") as f:
+with open("../config.yaml", "r") as f:
     config = yaml.safe_load(f)
 
 
@@ -54,16 +58,20 @@ from pyspark.sql import functions as F
 
 
 # Give Spark way more memory since you have 32GB RAM available
+# spark = (
+#     SparkSession.builder.appName("TimeSeriesForecast")
+#     .config("spark.driver.memory", "12g")
+#     .config("spark.executor.memory", "12g")
+#     .config("spark.driver.maxResultSize", "4g")
+#     .config("spark.sql.shuffle.partitions", "16")
+#     .config("spark.default.parallelism", "8")
+#     .config("spark.sql.adaptive.enabled", "true")
+#     .config("spark.sql.adaptive.coalescePartitions.enabled", "true")
+#     .getOrCreate()
+# )
+
 spark = (
-    SparkSession.builder.appName("TimeSeriesForecast")
-    .config("spark.driver.memory", "12g")
-    .config("spark.executor.memory", "12g")
-    .config("spark.driver.maxResultSize", "4g")
-    .config("spark.sql.shuffle.partitions", "16")
-    .config("spark.default.parallelism", "8")
-    .config("spark.sql.adaptive.enabled", "true")
-    .config("spark.sql.adaptive.coalescePartitions.enabled", "true")
-    .getOrCreate()
+    SparkSession.builder.getOrCreate()
 )
 
 

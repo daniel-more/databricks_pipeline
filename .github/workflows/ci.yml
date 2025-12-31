@@ -71,8 +71,8 @@ jobs:
       - name: Set up Databricks CLI
         uses: databricks/setup-cli@main
 
-      - name: Run finalProject_pipeline job
-        run: databricks bundle run finalProject_pipeline --refresh-all
+      - name: Run favorita_ts_pipeline job
+        run: databricks bundle run favorita_ts_pipeline --refresh-all
         working-directory: .
         env:
           # sayed
