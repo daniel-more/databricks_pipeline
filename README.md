@@ -115,4 +115,4 @@ Retail demand is affected by seasonality, promotions, holidays, and external fac
 This project was initially developed as a collaborative effort.  
 Thanks to the original team members for their contributions to the shared foundation of this work.
 
-Adding CI/CD v6
+Adding CI/CD v8
