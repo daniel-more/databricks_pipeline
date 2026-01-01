@@ -44,6 +44,8 @@ jobs:
           # daniel
           DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_TOKEN: ${{ secrets.KAGGLE_TOKEN }}
 
           DATABRICKS_BUNDLE_ENV: prod
   
@@ -72,5 +74,7 @@ jobs:
           # daniel
           DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
-
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_TOKEN: ${{ secrets.KAGGLE_TOKEN }}
+          
           DATABRICKS_BUNDLE_ENV: prod
