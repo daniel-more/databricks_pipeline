@@ -1,5 +1,5 @@
 bundle:
-  name: cscie103-final-project
+  name: favorita_ts_pipeline
 
 include:
   - resources/*.yml
@@ -9,7 +9,7 @@ include:
 workspace:
   # Use current user + target in path, following Databricks bundle examples
   # root_path: /Workspace/${workspace.current_user}/cscie103-final-project-${bundle.target}
-  root_path: /workspace/cscie103-final-project-${bundle.target}
+  root_path: /workspace/portfolio_catalog-${bundle.target}
 
 # Multi-environment setup, as expected by DATABRICKS_BUNDLE_ENV=dev/prod
 targets:

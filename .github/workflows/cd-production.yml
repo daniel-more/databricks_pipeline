@@ -42,8 +42,8 @@ jobs:
           # DATABRICKS_HOST: ${{ secrets.ALEX_DATABRICKS_HOST }}
           # DATABRICKS_TOKEN: ${{ secrets.ALEX_DATABRICKS_TOKEN }}
           # daniel
-          DATABRICKS_HOST: ${{ secrets.DANIEL_DATABRICKS_HOST }}
-          DATABRICKS_TOKEN: ${{ secrets.DANIEL_DATABRICKS_TOKEN }}
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
 
           DATABRICKS_BUNDLE_ENV: prod
   
@@ -59,8 +59,8 @@ jobs:
       - name: Set up Databricks CLI
         uses: databricks/setup-cli@main
 
-      - name: Run finalProject_pipeline job
-        run: databricks bundle run finalProject_pipeline --refresh-all
+      - name: Run favorita_ts_pipeline job
+        run: databricks bundle run favorita_ts_pipeline --refresh-all
         working-directory: .
         env:
           # sayed
@@ -70,7 +70,7 @@ jobs:
           # DATABRICKS_HOST: ${{ secrets.ALEX_DATABRICKS_HOST }}
           # DATABRICKS_TOKEN: ${{ secrets.ALEX_DATABRICKS_TOKEN }}
           # daniel
-          DATABRICKS_HOST: ${{ secrets.DANIEL_DATABRICKS_HOST }}
-          DATABRICKS_TOKEN: ${{ secrets.DANIEL_DATABRICKS_TOKEN }}
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
 
           DATABRICKS_BUNDLE_ENV: prod
