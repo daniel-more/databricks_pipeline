@@ -217,5 +217,6 @@ scrapbook/*.csv
 predictions/
 .DS_Store
 models
+predictions
 *.parquet
 *.pkl
