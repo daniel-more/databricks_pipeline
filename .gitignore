@@ -216,3 +216,6 @@ notebooks/dashboard
 scrapbook/*.csv
 .DS_Store
 models
+predictions
+*.parquet
+*.pkl
