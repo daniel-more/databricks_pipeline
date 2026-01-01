@@ -1,6 +1,9 @@
 # smartforecast/forecasting.py
+import pickle
+from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
+from mlflow.models.signature import ModelSignature, infer_signature
 from pyspark.ml import Pipeline
 from pyspark.ml.feature import OneHotEncoder, StringIndexer, VectorAssembler
 from pyspark.ml.regression import GBTRegressor, LinearRegression, RandomForestRegressor
@@ -190,7 +193,12 @@ def assemble_global_pipeline(
     stages = []
     encoded = []
     for c in categorical_cols:
-        si = StringIndexer(inputCol=c, outputCol=f"{c}_idx", handleInvalid="keep")
+        si = StringIndexer(
+            inputCol=c,
+            outputCol=f"{c}_idx",
+            handleInvalid="keep",
+            stringOrderType="alphabetAsc",
+        )
         ohe = OneHotEncoder(inputCols=[f"{c}_idx"], outputCols=[f"{c}_ohe"])
         stages += [si, ohe]
         encoded.append(f"{c}_ohe")
@@ -205,6 +213,8 @@ def fit_global_model(
     group_cols: List[str],
     feature_cols: List[str],
     estimator,
+    signature_path: str = "model_signature.pkl",
+    input_example_path: str = "input_example.parquet",
 ):
     """Add label, build pipeline, fit global model."""
     train = train.withColumn("label", F.col(target_col).cast("double"))
@@ -215,7 +225,33 @@ def fit_global_model(
         feature_cols=feature_cols,
         estimator=estimator,
     )
+    # Clear unnecessary references before fitting
+    train = train.select(*group_cols, *feature_cols, "label")
+    # Before calling fit_global_model, check the estimator size
+    import sys
+
+    print(f"Estimator size: {sys.getsizeof(estimator) / 1024:.2f} KB")
     model = pipe.fit(train)
+
+    # Take a small sample for signature / input example
+    input_example = train.limit(10)
+    output_example = model.transform(input_example).select("prediction")
+
+    # Convert to pandas once
+    input_pdf = input_example.toPandas()
+    output_pdf = output_example.toPandas()
+
+    # Infer MLflow signature
+    signature = infer_signature(input_pdf, output_pdf)
+
+    # Save signature
+    Path(signature_path).parent.mkdir(parents=True, exist_ok=True)
+    with open(signature_path, "wb") as f:
+        pickle.dump(signature, f)
+
+    # Save input example for MLflow
+    input_pdf.to_parquet(input_example_path, index=False)
+
     return model
 
 

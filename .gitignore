@@ -214,6 +214,7 @@ notebooks/data
 scrapbook/*.png
 notebooks/dashboard
 scrapbook/*.csv
+predictions/
 .DS_Store
 models
 predictions
