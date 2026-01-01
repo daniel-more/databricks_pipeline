@@ -87,12 +87,42 @@ ic(IS_DATABRICKS)
 # %%
 cfg = {
     "model_strategy": {
-        "type": "global",  # "by_family_group",  # Options: "global", "by_family", "by_family_group"
+        "type": "global",  # "by_family_group",  # "global",  # "by_family_group",  # Options: "global", "by_family", "by_family_group"
         "family_groups": {
-            "grocery": ["GROCERY I", "GROCERY II"],
-            "beverages": ["BEVERAGES", "LIQUOR,WINE,BEER"],
-            "perishable": ["PRODUCE", "DELI", "MEATS", "SEAFOOD"],
-            "household": ["CLEANING", "HOME CARE", "PERSONAL CARE"],
+            "cluster_low_errors": {"BEVERAGES", "GROCERY I", "PRODUCE", "CLEANING"},
+            "cluster_high_errors": [
+                "SCHOOL AND OFFICE SUPPLIES",
+                "SEAFOOD",
+                "BOOKS",
+                "LAWN AND GARDEN",
+                "EGGS",
+                "BABY CARE",
+                "DAIRY",
+                "AUTOMOTIVE",
+                "FROZEN FOODS",
+                "DELI",
+                "MEATS",
+                "LIQUOR,WINE,BEER",
+                "LINGERIE",
+                "PERSONAL CARE",
+                "PLAYERS AND ELECTRONICS",
+                "BREAD/BAKERY",
+                "LADIESWEAR",
+                "BEAUTY",
+                "POULTRY",
+                "MAGAZINES",
+                "PREPARED FOODS",
+                "CELEBRATION",
+                "PET SUPPLIES",
+                "HOME APPLIANCES",
+                "HOME CARE",
+                "HOME AND KITCHEN II",
+                "GROCERY II",
+                "HOME AND KITCHEN I",
+                "HARDWARE",
+            ],
+            # "perishable": ["PRODUCE", "DELI", "MEATS", "SEAFOOD"],
+            # "household": ["CLEANING", "HOME CARE", "PERSONAL CARE"],
             # Add more logical groupings
         },
     },
@@ -130,6 +160,10 @@ def train_models_by_group(df_feat, cfg):
         ic(results)
         ic()
 
+        results["global"]["predictions"].coalesce(1).write.format("parquet").mode(
+            "overwrite"
+        ).save(f"predictions/gbt_model_{cfg['model_strategy']['type']}")
+
     elif strategy == "by_family":
         # One model per family
         families = (
@@ -139,11 +173,23 @@ def train_models_by_group(df_feat, cfg):
             df_family = df_feat.filter(F.col("family") == family)
             results[family] = train_single_model(df_family, cfg, family)
 
+            results[family]["predictions"].coalesce(1).write.format("parquet").mode(
+                "overwrite"
+            ).save(
+                f"predictions/{cfg['model']['type']}_{cfg['model_strategy']['type']}_{family}"
+            )
+
     elif strategy == "by_family_group":
         # One model per family group
         for group_name, families in cfg["model_strategy"]["family_groups"].items():
             df_group = df_feat.filter(F.col("family").isin(families))
             results[group_name] = train_single_model(df_group, cfg, group_name)
+
+            results[group_name]["predictions"].coalesce(1).write.format("parquet").mode(
+                "overwrite"
+            ).save(
+                f"predictions/gbt_model_{cfg['model_strategy']['type']}_{group_name}"
+            )
 
     return results
 
@@ -295,6 +341,7 @@ with mlflow.start_run(run_name="favorita_multi_model"):
     # --- Step 3: Train model based on strategy ---
     ic("# --- Step 3: Train model based on strategy ---")
     all_results = train_models_by_group(df_feat, cfg)
+
     ic()
 
     # Compare results across groups
