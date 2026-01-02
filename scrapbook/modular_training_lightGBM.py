@@ -125,6 +125,9 @@ cfg = {
 
 def train_lgbm_model(train_pdf, val_pdf, feature_cols, target_col, params, early_stopping_rounds=30, categorical_feature=None):
     """Train LightGBM model with Pandas DataFrames"""
+    ic(train_pdf.head(5))
+    ic(feature_cols)
+    ic(params)
     
     # Prepare training data
     X_train = train_pdf[feature_cols]
@@ -144,7 +147,9 @@ def train_lgbm_model(train_pdf, val_pdf, feature_cols, target_col, params, early
         X_train, y_train_log,
         eval_set=[(X_val, y_val_log)],
         eval_metric='rmse',
-        callbacks=[lgb.early_stopping(early_stopping_rounds, verbose=False)]
+        callbacks=[lgb.early_stopping(early_stopping_rounds, verbose=False)],
+        categorical_feature='auto'
+    
     )
     
     return model
@@ -163,6 +168,15 @@ def predict_lgbm_model(model, test_pdf, feature_cols):
 
 def train_single_model(df_feat, cfg, model_name):
     """Train and evaluate a single LightGBM model"""
+
+    mlflow.lightgbm.autolog(
+    log_input_examples=True,
+    log_model_signatures=True,
+    log_models=True,
+    disable=False,
+    exclusive=False,
+    disable_for_unsupported_versions=False,
+    silent=False)
     
     with mlflow.start_run(run_name=model_name, nested=True):
         mlflow.log_param("model_name", model_name)
@@ -184,18 +198,8 @@ def train_single_model(df_feat, cfg, model_name):
         train_pdf = train_spark.toPandas()
         test_pdf = test_spark.toPandas()
         
-        # Further split train into train/validation
-        train_pdf = train_pdf.sort_values(cfg["data"]["date_col"])
-        val_size = int(len(train_pdf) * cfg["split"]["validation_size"])
-        
-        val_pdf = train_pdf.tail(val_size).copy()
-        train_pdf = train_pdf.head(len(train_pdf) - val_size).copy()
-
-        # train_pdf[cfg["data"]["date_col"]] = pd.to_datetime(train_pdf[cfg["data"]["date_col"]])
-        # val_pdf[cfg["data"]["date_col"]] = pd.to_datetime(val_pdf[cfg["data"]["date_col"]])
-        # test_pdf[cfg["data"]["date_col"]] = pd.to_datetime(test_pdf[cfg["data"]["date_col"]])
-        
-        ic(f"Train size: {len(train_pdf)}, Val size: {len(val_pdf)}, Test size: {len(test_pdf)}")
+       
+        ic(f"Train size: {len(train_pdf)}, Test size: {len(test_pdf)}")
         
         # Get feature columns
         feature_cols = [
@@ -209,36 +213,41 @@ def train_single_model(df_feat, cfg, model_name):
 
         # Separate categorical and numeric features
         categorical_cols = cfg["data"]["group_cols"] # [c for c in feature_cols if train_pdf[c].dtype == 'object'] + 
-        numeric_cols = [c for c in feature_cols if train_pdf[c].dtype in ['int64', 'float64', 'int32', 'float32', 'bool']]
+        
+        numeric_cols = [c for c in feature_cols 
+                if c not in categorical_cols and 
+                train_pdf[c].dtype in ['int64', 'float64', 'int32', 'float32', 'bool']]
 
         ic(categorical_cols)
         ic(numeric_cols)
 
-        train_pdf = train_pdf[categorical_cols + numeric_cols + cfg["data"]["target_col"]]
-        val_pdf = val_pdf[categorical_cols + numeric_cols + cfg["data"]["target_col"]]
-        test_pdf = test_pdf[categorical_cols + numeric_cols]
+        train_pdf = train_pdf[categorical_cols + numeric_cols + [cfg["data"]["target_col"]]]
+        test_pdf = test_pdf[categorical_cols + numeric_cols + [cfg["data"]["target_col"]]]
+        # test_pdf = test_pdf[categorical_cols + numeric_cols]
 
         ic(f"Categorical features: {len(categorical_cols)}, Numeric features: {len(numeric_cols)}")
 
         # Convert categorical columns to 'category' dtype for LightGBM
         for col in categorical_cols:
             train_pdf[col] = train_pdf[col].astype('category')
-            val_pdf[col] = val_pdf[col].astype('category')
             test_pdf[col] = test_pdf[col].astype('category')
 
         ic(f"Feature columns to encode: {feature_cols}")
         ic(feature_cols)
         
         ic(f"Number of features: {len(feature_cols)}")
+        
+        ic('columns before training')
+        ic(f"{train_pdf.columns}")
+        ic(f"{test_pdf.columns}")
 
-        ic(train_pdf.columns)
         
         # Train LightGBM model
         ic("Training LightGBM model...")
         model = train_lgbm_model(
             train_pdf,
-            val_pdf,
-            feature_cols,
+            test_pdf,
+            feature_cols=categorical_cols + numeric_cols,
             target_col=cfg["data"]["target_col"],
             params=cfg["model"]["params"],
             early_stopping_rounds=cfg["model"]["early_stopping_rounds"],
@@ -259,40 +268,40 @@ def train_single_model(df_feat, cfg, model_name):
         # Convert back to Spark for metrics computation
         pred_spark = spark.createDataFrame(test_pdf)
         
-        # Evaluate
-        ic("Computing metrics...")
-        by_series, portfolio = compute_metrics(
-            pred_spark,
-            cfg["data"]["date_col"],
-            "y",
-            "prediction",
-            cfg["data"]["group_cols"],
-            cfg["evaluation"]["mase_seasonality"],
-        )
+        # # Evaluate
+        # ic("Computing metrics...")
+        # by_series, portfolio = compute_metrics(
+        #     pred_spark,
+        #     cfg["data"]["date_col"],
+        #     "y",
+        #     "prediction",
+        #     cfg["data"]["group_cols"],
+        #     cfg["evaluation"]["mase_seasonality"],
+        # )
         
-        # Log metrics
-        agg_df = by_series.groupBy("family").agg(
-            F.min("wMAPE").alias("min_wMAPE"),
-            F.max("wMAPE").alias("max_wMAPE"),
-            F.expr("percentile_approx(wMAPE, 0.5)").alias("median_wMAPE"),
-        )
+        # # Log metrics
+        # agg_df = by_series.groupBy("family").agg(
+        #     F.min("wMAPE").alias("min_wMAPE"),
+        #     F.max("wMAPE").alias("max_wMAPE"),
+        #     F.expr("percentile_approx(wMAPE, 0.5)").alias("median_wMAPE"),
+        # )
         
-        agg_list = agg_df.collect()
+        # agg_list = agg_df.collect()
         
-        for row in agg_list:
-            family = row["family"]
-            mlflow.log_metric(f"wMAPE_min_{family}", float(row["min_wMAPE"]))
-            mlflow.log_metric(f"wMAPE_max_{family}", float(row["max_wMAPE"]))
-            mlflow.log_metric(f"wMAPE_median_{family}", float(row["median_wMAPE"]))
+        # for row in agg_list:
+        #     family = row["family"]
+        #     mlflow.log_metric(f"wMAPE_min_{family}", float(row["min_wMAPE"]))
+        #     mlflow.log_metric(f"wMAPE_max_{family}", float(row["max_wMAPE"]))
+        #     mlflow.log_metric(f"wMAPE_median_{family}", float(row["median_wMAPE"]))
         
-        portfolio_metrics = portfolio.first().asDict()
-        ic(portfolio_metrics)
+        # portfolio_metrics = portfolio.first().asDict()
+        # ic(portfolio_metrics)
         
-        for key, value in portfolio_metrics.items():
-            if isinstance(value, (int, float)):
-                mlflow.log_metric(key, float(value))
-            else:
-                mlflow.log_param(key, str(value))
+        # for key, value in portfolio_metrics.items():
+        #     if isinstance(value, (int, float)):
+        #         mlflow.log_metric(key, float(value))
+        #     else:
+        #         mlflow.log_param(key, str(value))
         
         # Log model with MLflow
         ic("Logging model...")
@@ -349,7 +358,7 @@ def train_single_model(df_feat, cfg, model_name):
         return {
             "model": model,
             "predictions": pred_spark,
-            "metrics": {"by_series": by_series, "portfolio": portfolio},
+            # "metrics": {"by_series": by_series, "portfolio": portfolio},
             "feature_importance": feature_importance
         }
 
