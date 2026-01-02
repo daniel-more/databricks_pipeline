@@ -123,7 +123,7 @@ cfg = {
 }
 
 
-def train_lgbm_model(train_pdf, val_pdf, feature_cols, target_col, params, early_stopping_rounds=30):
+def train_lgbm_model(train_pdf, val_pdf, feature_cols, target_col, params, early_stopping_rounds=30, categorical_feature=None):
     """Train LightGBM model with Pandas DataFrames"""
     
     # Prepare training data
@@ -190,6 +190,10 @@ def train_single_model(df_feat, cfg, model_name):
         
         val_pdf = train_pdf.tail(val_size).copy()
         train_pdf = train_pdf.head(len(train_pdf) - val_size).copy()
+
+        # train_pdf[cfg["data"]["date_col"]] = pd.to_datetime(train_pdf[cfg["data"]["date_col"]])
+        # val_pdf[cfg["data"]["date_col"]] = pd.to_datetime(val_pdf[cfg["data"]["date_col"]])
+        # test_pdf[cfg["data"]["date_col"]] = pd.to_datetime(test_pdf[cfg["data"]["date_col"]])
         
         ic(f"Train size: {len(train_pdf)}, Val size: {len(val_pdf)}, Test size: {len(test_pdf)}")
         
@@ -197,10 +201,32 @@ def train_single_model(df_feat, cfg, model_name):
         feature_cols = [
             c for c in train_pdf.columns
             if c not in cfg["data"]["group_cols"] + 
-            [cfg["data"]["date_col"], cfg["data"]["target_col"], "label"]
+            [cfg["data"]["date_col"], cfg["data"]["target_col"], "label"] 
         ]
+
+        ic(feature_cols)
+
+        # Separate categorical and numeric features
+        categorical_cols = [c for c in feature_cols if train_pdf[c].dtype == 'object']
+        numeric_cols = [c for c in feature_cols if train_pdf[c].dtype in ['int64', 'float64', 'int32', 'float32', 'bool']]
+
+        ic(categorical_cols)
+        ic(numeric_cols)
+
+        ic(f"Categorical features: {len(categorical_cols)}, Numeric features: {len(numeric_cols)}")
+
+        # Convert categorical columns to 'category' dtype for LightGBM
+        for col in categorical_cols:
+            train_pdf[col] = train_pdf[col].astype('category')
+            val_pdf[col] = val_pdf[col].astype('category')
+            test_pdf[col] = test_pdf[col].astype('category')
+
+        ic(f"Feature columns to encode: {feature_cols}")
+        ic(feature_cols)
         
         ic(f"Number of features: {len(feature_cols)}")
+
+        ic(train_pdf.columns)
         
         # Train LightGBM model
         ic("Training LightGBM model...")
@@ -210,7 +236,9 @@ def train_single_model(df_feat, cfg, model_name):
             feature_cols,
             cfg["data"]["target_col"],
             cfg["model"]["params"],
-            cfg["model"]["early_stopping_rounds"]
+            cfg["model"]["early_stopping_rounds"],
+            categorical_feature=categorical_cols  # Tell LightGBM which are categorical
+
         )
         
         ic(f"Best iteration: {model.best_iteration_}")
@@ -261,11 +289,14 @@ def train_single_model(df_feat, cfg, model_name):
             else:
                 mlflow.log_param(key, str(value))
         
-        # Log model with MLflow
-        ic("Logging model...")
-        input_example = train_pdf[:5]
+        # # Log model with MLflow
+        # ic("Logging model...")
+        # from mlflow.models.signature import infer_signature
 
-        mlflow.lightgbm.log_model(model, f"model_{model_name}", input_example=input_example)
+        # # Infer signature from your data
+        # signature = infer_signature(train_pdf, model.predict(train_pdf))
+
+        # mlflow.lightgbm.log_model(model, name=f"model_{model_name}", signature=signature)
         
         # Add metadata columns to predictions
         from pyspark.sql.functions import lit, current_timestamp
@@ -370,13 +401,6 @@ with mlflow.start_run(run_name="favorita_lgbm_multi_model"):
         target_agg=cfg["aggregation"]["target_agg"],
         extra_numeric_aggs=cfg["aggregation"].get("extra_numeric_aggs"),
     )
-    ic(df_feat.schema)
-    # # Get list of non-string columns
-    # numeric_cols = [field.name for field in df_feat.schema.fields 
-    #             if not isinstance(field.dataType, StringType)]
-
-    # # Select only those columns
-    # df_feat = df_feat.select(numeric_cols)
 
     ic(df_feat.limit(5))
     
