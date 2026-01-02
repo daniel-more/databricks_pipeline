@@ -1,9 +1,6 @@
 # %%
-<<<<<<< Updated upstream
 import os
-=======
 %pip install icecream
->>>>>>> Stashed changes
 from pathlib import Path
 
 import mlflow
