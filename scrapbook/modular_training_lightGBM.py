@@ -155,9 +155,24 @@ def train_lgbm_model(train_pdf, val_pdf, feature_cols, target_col, params, early
     return model
 
 
-def predict_lgbm_model(model, test_pdf, feature_cols):
-    """Generate predictions with LightGBM model"""
-    X_test = test_pdf[feature_cols]
+def predict_lgbm_model(model, test_data, feature_cols):
+    """Generate predictions with LightGBM model
+    
+    Args:
+        model: Trained LightGBM model
+        test_data: DataFrame containing only the feature columns
+        feature_cols: List of feature column names (for validation)
+    """
+    # Ensure we only use the specified features
+    if isinstance(test_data, pd.DataFrame):
+        X_test = test_data[feature_cols]
+    else:
+        X_test = test_data
+    
+    # Verify feature count matches
+    assert X_test.shape[1] == len(feature_cols), \
+        f"Feature count mismatch: got {X_test.shape[1]}, expected {len(feature_cols)}"
+    
     predictions_log = model.predict(X_test)
     
     # Reverse log transformation
