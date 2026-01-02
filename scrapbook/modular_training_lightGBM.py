@@ -214,8 +214,8 @@ def train_single_model(df_feat, cfg, model_name):
         ic(categorical_cols)
         ic(numeric_cols)
 
-        train_pdf = train_pdf[categorical_cols + numeric_cols]
-        val_pdf = val_pdf[categorical_cols + numeric_cols]
+        train_pdf = train_pdf[categorical_cols + numeric_cols + cfg["data"]["target_col"]]
+        val_pdf = val_pdf[categorical_cols + numeric_cols + cfg["data"]["target_col"]]
         test_pdf = test_pdf[categorical_cols + numeric_cols]
 
         ic(f"Categorical features: {len(categorical_cols)}, Numeric features: {len(numeric_cols)}")
@@ -239,9 +239,9 @@ def train_single_model(df_feat, cfg, model_name):
             train_pdf,
             val_pdf,
             feature_cols,
-            cfg["data"]["target_col"],
-            cfg["model"]["params"],
-            cfg["model"]["early_stopping_rounds"],
+            target_col=cfg["data"]["target_col"],
+            params=cfg["model"]["params"],
+            early_stopping_rounds=cfg["model"]["early_stopping_rounds"],
             categorical_feature=categorical_cols  # Tell LightGBM which are categorical
 
         )
