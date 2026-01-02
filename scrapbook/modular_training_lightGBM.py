@@ -200,18 +200,23 @@ def train_single_model(df_feat, cfg, model_name):
         # Get feature columns
         feature_cols = [
             c for c in train_pdf.columns
-            if c not in cfg["data"]["group_cols"] + 
+            if c not in 
+            # cfg["data"]["group_cols"] + 
             [cfg["data"]["date_col"], cfg["data"]["target_col"], "label"] 
         ]
 
         ic(feature_cols)
 
         # Separate categorical and numeric features
-        categorical_cols = [c for c in feature_cols if train_pdf[c].dtype == 'object']
+        categorical_cols = cfg["data"]["group_cols"] # [c for c in feature_cols if train_pdf[c].dtype == 'object'] + 
         numeric_cols = [c for c in feature_cols if train_pdf[c].dtype in ['int64', 'float64', 'int32', 'float32', 'bool']]
 
         ic(categorical_cols)
         ic(numeric_cols)
+
+        train_pdf = train_pdf[categorical_cols + numeric_cols]
+        val_pdf = val_pdf[categorical_cols + numeric_cols]
+        test_pdf = test_pdf[categorical_cols + numeric_cols]
 
         ic(f"Categorical features: {len(categorical_cols)}, Numeric features: {len(numeric_cols)}")
 
@@ -289,14 +294,15 @@ def train_single_model(df_feat, cfg, model_name):
             else:
                 mlflow.log_param(key, str(value))
         
-        # # Log model with MLflow
-        # ic("Logging model...")
-        # from mlflow.models.signature import infer_signature
+        # Log model with MLflow
+        ic("Logging model...")
+        from mlflow.models.signature import infer_signature
 
-        # # Infer signature from your data
-        # signature = infer_signature(train_pdf, model.predict(train_pdf))
+        # Infer signature from your data
+        ic(train_pdf.head())
+        signature = infer_signature(train_pdf, model.predict(train_pdf))
 
-        # mlflow.lightgbm.log_model(model, name=f"model_{model_name}", signature=signature)
+        mlflow.lightgbm.log_model(model, name=f"model_{model_name}", signature=signature)
         
         # Add metadata columns to predictions
         from pyspark.sql.functions import lit, current_timestamp
@@ -318,7 +324,7 @@ def train_single_model(df_feat, cfg, model_name):
                 .mode("append") \
                 .partitionBy("model_name", cfg["data"]["date_col"]) \
                 .option("mergeSchema", "true") \
-                .saveAsTable(f"{config['databricks']['catalog']}.{config['databricks']['schema']}.silver_test_predictions")
+                .saveAsTable(f"{config['databricks']['catalog']}.{config['databricks']['schema']}.lightgbm_silver_test_predictions")
             
             ic(f"Saved predictions to Delta table: silver_test_predictions")
         else:
