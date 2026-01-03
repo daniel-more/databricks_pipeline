@@ -1,6 +1,6 @@
-# !pip install -q mlflow lightgbm
-# !pip install icecream
-# %restart_python
+!pip install -q mlflow lightgbm
+!pip install icecream
+%restart_python
 # %%
 import os
 from datetime import datetime
@@ -24,7 +24,7 @@ spark = (
 )
 
 
-with open("config.yaml", "r") as f:
+with open("../config.yaml", "r") as f:
     config = yaml.safe_load(f)
 
 config["databricks"]["catalog"], config["databricks"]["schema"], config["databricks"][
@@ -364,7 +364,7 @@ def train_single_model(df_feat, cfg, model_name):
             train_pdf[feature_cols], model.predict(train_pdf[feature_cols])
         )
         mlflow.lightgbm.log_model(
-            model, artifact_path=f"model_{model_name}", signature=signature
+            model, name=f"model_{model_name}", signature=signature
         )
 
         # Step 8: Save predictions
