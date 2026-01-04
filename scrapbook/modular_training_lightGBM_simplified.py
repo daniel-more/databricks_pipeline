@@ -105,7 +105,7 @@ cfg = {
     "split": {
         "mode": "horizon",
         "train_end_date": "",
-        "test_horizon": 60,
+        "test_horizon": 180,
         "validation_size": 0.15,
     },
     "model": {
@@ -258,6 +258,15 @@ def save_predictions(
     # Save based on environment
     if is_databricks:
         table_name = f"{config['databricks']['catalog']}.{config['databricks']['schema']}.lightgbm_silver_test_predictions"
+
+        table_schema = spark.table(table_name).schema
+        onpromotion_type = [f.dataType for f in table_schema if f.name == "onpromotion"][0]
+        print(onpromotion_type)
+        # Cast 'onpromotion' in pred_spark to match the Delta table type
+        pred_spark = pred_spark.withColumn(
+            "onpromotion",
+            F.col("onpromotion").cast(onpromotion_type.simpleString()))
+
         pred_spark.write.format("delta").mode("append").partitionBy(
             "model_name", cfg["data"]["date_col"]
         ).option("mergeSchema", "true").saveAsTable(table_name)
@@ -453,20 +462,22 @@ mlflow.set_experiment("/Users/daniel.more.torres@gmail.com/favorita_lgbm_regress
 
 # Compute cutoff date
 date_col = cfg["data"]["date_col"]
+print(date_col)
 max_date = df_raw.select(F.max(date_col)).collect()[0][0]
+print(max_date)
 cutoff_date = max_date - timedelta(days=180)
+print(cutoff_date)
 
 df_raw_train = df_raw.filter(F.col(date_col) <= F.lit(cutoff_date))
 df_raw_test  = df_raw.filter(F.col(date_col) >  F.lit(cutoff_date))
 
-# Log split info
-mlflow.log_param("test_days", 180)
-mlflow.log_param("train_end_date", str(df_raw_train[date_col].max()))
-mlflow.log_param("test_start_date", str(df_raw_test[date_col].min()))
 
+mlflow.end_run()
 
 
 with mlflow.start_run(run_name="favorita_lgbm_multi_model"):
+    
+
     mlflow.log_param("strategy", cfg["model_strategy"]["type"])
     mlflow.log_params(cfg["model"]["params"])
     mlflow.log_param("config", str(cfg))
@@ -475,34 +486,7 @@ with mlflow.start_run(run_name="favorita_lgbm_multi_model"):
     print("\n" + "=" * 60)
     print("STEP 1: Building Features")
     print("=" * 60)
-    df_feat_train = build_features(
-        df_raw_train,
-        cfg["data"]["date_col"],
-        cfg["data"]["target_col"],
-        cfg["data"]["group_cols"],
-        cfg["features"]["lags"],
-        cfg["features"]["mas"],
-        cfg["features"]["add_time_signals"],
-        pre_aggregate=True,
-        target_agg=cfg["aggregation"]["target_agg"],
-        extra_numeric_aggs=cfg["aggregation"].get("extra_numeric_aggs"),
-    )
-    print(f"✓ Features built: {len(df_feat_train.columns)} columns")
-
-    # Step 2: Train models based on strategy
-    print("\n" + "=" * 60)
-    print("STEP 2: Training Models")
-    print("=" * 60)
-    all_results = train_models_by_group(df_feat_train, cfg)
-
-    # ------------------------------------------------------------------
-    # STEP 3: Build TEST features (using full history)
-    # ------------------------------------------------------------------
-    print("\n" + "=" * 60)
-    print("STEP 3: Building TEST Features")
-    print("=" * 60)
-
-    df_feat_all = build_features(
+    df_feat = build_features(
         df_raw,
         cfg["data"]["date_col"],
         cfg["data"]["target_col"],
@@ -514,10 +498,34 @@ with mlflow.start_run(run_name="favorita_lgbm_multi_model"):
         target_agg=cfg["aggregation"]["target_agg"],
         extra_numeric_aggs=cfg["aggregation"].get("extra_numeric_aggs"),
     )
+    print(f"✓ Features built: {len(df_feat.columns)} columns")
 
-    df_feat_test = df_feat_all[df_feat_all[date_col] > cutoff_date]
+    # Create train/test
 
-    print(f"✓ Test feature rows: {len(df_feat_test)}")
+    df_feat_train = df_raw.filter(F.col(date_col) <= F.lit(cutoff_date))
+    df_feat_test  = df_raw.filter(F.col(date_col) >  F.lit(cutoff_date))
+
+    train_end_date = (
+    df_raw_train
+    .select(F.max(F.col(date_col)).alias("max_date"))
+    .collect()[0]["max_date"]
+    )
+
+    test_start_date = (
+        df_raw_test
+        .select(F.min(F.col(date_col)).alias("min_date"))
+        .collect()[0]["min_date"]
+    )
+    # Log split info
+    mlflow.log_param("test_days", 180)
+    mlflow.log_param("train_end_date", str(train_end_date))
+    mlflow.log_param("test_start_date", str(test_start_date))
+
+    # Step 2: Train models based on strategy
+    print("\n" + "=" * 60)
+    print("STEP 2: Training Models")
+    print("=" * 60)
+    all_results = train_models_by_group(df_feat_train, cfg)
 
 
     # Step 3: Compare results (if multiple models)
