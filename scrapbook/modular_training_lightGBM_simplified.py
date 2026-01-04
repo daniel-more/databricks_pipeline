@@ -226,8 +226,11 @@ def predict_lgbm_model(model, test_data, feature_cols):
         X_test.shape[1] == model.n_features_
     ), f"Model expects {model.n_features_} features, got {X_test.shape[1]}"
 
-    # Predict and reverse log transform
-    predictions_log = model.predict(X_test)
+    # Predict using best_iteration from early stopping
+    # If early stopping was used, this uses the optimal number of trees
+    # Otherwise, uses all trees (n_estimators)
+    num_iteration = model.best_iteration_ if model.best_iteration_ > 0 else None
+    predictions_log = model.predict(X_test, num_iteration=num_iteration)
     predictions = np.expm1(predictions_log)
 
     return predictions
