@@ -159,14 +159,15 @@ def get_feature_columns(df, cfg):
     return categorical_cols, numeric_cols, all_features
 
 
-def prepare_dataframes(train_pdf, test_pdf, categorical_cols, numeric_cols, target_col):
+def prepare_dataframes(train_pdf, test_pdf, categorical_cols, numeric_cols, target_col, date_col):
     """
     Prepare train and test dataframes with consistent columns and types.
     Returns: (prepared_train, prepared_test, feature_cols)
     """
     feature_cols = categorical_cols + numeric_cols
-    required_cols = feature_cols + [target_col]
-
+    # Keep date column for later analysis, but don't include in features
+    required_cols = feature_cols + [target_col, date_col]
+    
     # Subset to required columns only
     train_pdf = train_pdf[required_cols].copy()
     test_pdf = test_pdf[required_cols].copy()
@@ -232,6 +233,8 @@ def predict_lgbm_model(model, test_data, feature_cols):
     num_iteration = model.best_iteration_ if model.best_iteration_ > 0 else None
     predictions_log = model.predict(X_test, num_iteration=num_iteration)
     predictions = np.expm1(predictions_log)
+
+    
 
     return predictions
 
@@ -333,7 +336,7 @@ def train_single_model(df_feat, cfg, model_name):
             test_pdf,
             categorical_cols,
             numeric_cols,
-            cfg["data"]["target_col"],
+            cfg["data"]["target_col"], cfg["data"]["date_col"]
         )
 
         # Step 5: Train model
@@ -351,10 +354,13 @@ def train_single_model(df_feat, cfg, model_name):
         # Step 6: Generate predictions
         print("→ Generating predictions...")
         predictions = predict_lgbm_model(model, test_pdf, feature_cols)
+        
 
         # Add predictions to test dataframe
         test_pdf["prediction"] = predictions
         test_pdf["y"] = test_pdf[cfg["data"]["target_col"]]
+        print(test_pdf.columns)
+        print(test_pdf.head(5).T)
 
         # Convert back to Spark
         pred_spark = spark.createDataFrame(test_pdf)
@@ -363,9 +369,11 @@ def train_single_model(df_feat, cfg, model_name):
         print("→ Logging model to MLflow...")
         from mlflow.models.signature import infer_signature
 
+        print("infer_signature")
         signature = infer_signature(
             train_pdf[feature_cols], model.predict(train_pdf[feature_cols])
         )
+        print("log_model")
         mlflow.lightgbm.log_model(
             model, name=f"model_{model_name}", signature=signature
         )
