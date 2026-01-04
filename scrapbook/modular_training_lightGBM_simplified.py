@@ -315,12 +315,12 @@ def train_single_model(df_feat, cfg, model_name):
         print("→ Splitting train/test data...")
         train_spark, test_spark = train_test_split(
             df_feat,
-            cfg["data"]["date_col"],
-            cfg["data"]["group_cols"],
-            cfg["split"]["mode"],
-            cfg["split"]["train_end_date"],
-            cfg["split"]["test_horizon"],
-            cfg["data"]["min_train_periods"],
+            date_col=cfg["data"]["date_col"],
+            group_cols=cfg["data"]["group_cols"],
+            mode=cfg["split"]["mode"],
+            train_end_date=cfg["split"]["train_end_date"],
+            test_horizon=cfg["split"]["test_horizon"],
+            min_train_periods=cfg["data"]["min_train_periods"],
         )
 
         # Step 2: Convert to Pandas
