@@ -105,7 +105,7 @@ cfg = {
     "split": {
         "mode": "horizon",
         "train_end_date": "",
-        "test_horizon": 28,
+        "test_horizon": 60,
         "validation_size": 0.15,
     },
     "model": {
@@ -445,8 +445,26 @@ def train_models_by_group(df_feat, cfg):
 # MAIN EXECUTION
 # ========================================
 
+from datetime import timedelta
+
+
 mlflow.set_tracking_uri("databricks")
 mlflow.set_experiment("/Users/daniel.more.torres@gmail.com/favorita_lgbm_regressor")
+
+# Compute cutoff date
+date_col = cfg["data"]["date_col"]
+max_date = df_raw.select(F.max(date_col)).collect()[0][0]
+cutoff_date = max_date - timedelta(days=180)
+
+df_raw_train = df_raw.filter(F.col(date_col) <= F.lit(cutoff_date))
+df_raw_test  = df_raw.filter(F.col(date_col) >  F.lit(cutoff_date))
+
+# Log split info
+mlflow.log_param("test_days", 180)
+mlflow.log_param("train_end_date", str(df_raw_train[date_col].max()))
+mlflow.log_param("test_start_date", str(df_raw_test[date_col].min()))
+
+
 
 with mlflow.start_run(run_name="favorita_lgbm_multi_model"):
     mlflow.log_param("strategy", cfg["model_strategy"]["type"])
@@ -457,7 +475,34 @@ with mlflow.start_run(run_name="favorita_lgbm_multi_model"):
     print("\n" + "=" * 60)
     print("STEP 1: Building Features")
     print("=" * 60)
-    df_feat = build_features(
+    df_feat_train = build_features(
+        df_raw_train,
+        cfg["data"]["date_col"],
+        cfg["data"]["target_col"],
+        cfg["data"]["group_cols"],
+        cfg["features"]["lags"],
+        cfg["features"]["mas"],
+        cfg["features"]["add_time_signals"],
+        pre_aggregate=True,
+        target_agg=cfg["aggregation"]["target_agg"],
+        extra_numeric_aggs=cfg["aggregation"].get("extra_numeric_aggs"),
+    )
+    print(f"✓ Features built: {len(df_feat_train.columns)} columns")
+
+    # Step 2: Train models based on strategy
+    print("\n" + "=" * 60)
+    print("STEP 2: Training Models")
+    print("=" * 60)
+    all_results = train_models_by_group(df_feat_train, cfg)
+
+    # ------------------------------------------------------------------
+    # STEP 3: Build TEST features (using full history)
+    # ------------------------------------------------------------------
+    print("\n" + "=" * 60)
+    print("STEP 3: Building TEST Features")
+    print("=" * 60)
+
+    df_feat_all = build_features(
         df_raw,
         cfg["data"]["date_col"],
         cfg["data"]["target_col"],
@@ -469,13 +514,11 @@ with mlflow.start_run(run_name="favorita_lgbm_multi_model"):
         target_agg=cfg["aggregation"]["target_agg"],
         extra_numeric_aggs=cfg["aggregation"].get("extra_numeric_aggs"),
     )
-    print(f"✓ Features built: {len(df_feat.columns)} columns")
 
-    # Step 2: Train models based on strategy
-    print("\n" + "=" * 60)
-    print("STEP 2: Training Models")
-    print("=" * 60)
-    all_results = train_models_by_group(df_feat, cfg)
+    df_feat_test = df_feat_all[df_feat_all[date_col] > cutoff_date]
+
+    print(f"✓ Test feature rows: {len(df_feat_test)}")
+
 
     # Step 3: Compare results (if multiple models)
     if len(all_results) > 1:
