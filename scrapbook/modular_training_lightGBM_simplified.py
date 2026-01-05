@@ -645,6 +645,9 @@ def train_models_by_group(df_feat, cfg):
 # ========================================
 # MAIN EXECUTION
 # ========================================
+from pyspark.sql.functions import col
+df_raw = df_raw.filter(col("family") == "BEVERAGES")
+
 
 from pyspark.sql.functions import col
 
@@ -654,7 +657,10 @@ from pyspark.sql.functions import col
 mlflow.set_tracking_uri("databricks")
 mlflow.set_experiment("/Users/daniel.more.torres@gmail.com/favorita_lgbm_regressor")
 
+<<<<<<< Updated upstream
 # End any existing runs
+=======
+>>>>>>> Stashed changes
 mlflow.end_run()
 
 with mlflow.start_run(run_name="favorita_lgbm_multi_model"):
@@ -681,6 +687,7 @@ with mlflow.start_run(run_name="favorita_lgbm_multi_model"):
     )
     print(f"✓ Features built: {len(df_feat.columns)} columns")
 
+<<<<<<< Updated upstream
     # Log dataset info
     date_col = cfg["data"]["date_col"]
     max_date = df_feat.select(F.max(date_col)).collect()[0][0]
@@ -689,6 +696,8 @@ with mlflow.start_run(run_name="favorita_lgbm_multi_model"):
     mlflow.log_param("data_start_date", str(min_date))
     mlflow.log_param("data_end_date", str(max_date))
     mlflow.log_param("total_rows", df_feat.count())
+=======
+ >>>>>>> Stashed changes
 
     # Step 2: Train models based on strategy
     # The train/val/test split happens INSIDE train_single_model()
