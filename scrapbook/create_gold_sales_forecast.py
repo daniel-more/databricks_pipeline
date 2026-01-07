@@ -35,6 +35,7 @@ def create_gold_sales_forecast_table():
         store_nbr BIGINT NOT NULL,
         sales DOUBLE,                          -- Actual sales (NULL for future forecasts)
         forecast DOUBLE,                       -- Predicted sales (NULL for historical actuals)
+        split STRING,                          -- 'train', 'val', 'test'
         record_type STRING NOT NULL,           -- 'actual', 'forecast', 'backtest'
         model_name STRING,                     -- Which model generated the forecast
         model_type STRING,                     -- e.g., 'lgbm'
@@ -75,6 +76,7 @@ def backfill_historical_actuals(overwrite=False):
             F.col("store_nbr").cast("bigint").alias("store_nbr"),  # Cast to BIGINT
             "sales",
             F.lit(None).cast("double").alias("forecast"),
+            F.lit("split").alias("split"),
             F.lit("actual").alias("record_type"),
             F.lit(None).cast("string").alias("model_name"),
             F.lit(None).cast("string").alias("model_type"),
@@ -126,6 +128,7 @@ def append_forecast_predictions(model_name_filter=None):
             F.lit(None).cast("double").alias("sales"),  # NULL for forecasts
             F.col("prediction").alias("forecast"),
             F.lit("forecast").alias("record_type"),
+            "split",
             "model_name",
             "model_type",
             "model_version",
