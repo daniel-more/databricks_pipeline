@@ -79,6 +79,7 @@ else:
 cfg = {
     "model_strategy": {
         "type": "global",  # Options: "global", "by_family", "by_family_group"
+        # "type": "by_family",  # Options: "global", "by_family", "by_family_group"
         "family_groups": {
             "cluster_low_errors": {"BEVERAGES", "GROCERY I", "PRODUCE", "CLEANING"},
             "cluster_high_errors": [
@@ -101,7 +102,7 @@ cfg = {
         "target_agg": "sum",
         "extra_numeric_aggs": {"dcoilwtico": "mean", "onpromotion": "sum"},
     },
-    "features": {"lags": [1, 7, 14, 28], "mas": [7, 28], "add_time_signals": True},
+    "features": {"lags": [1, 7, 14, 28, 56, 71], "mas": [7, 28], "add_time_signals": True},
     "split": {
         "mode": "horizon",
         "train_end_date": "",
@@ -112,7 +113,7 @@ cfg = {
     "model": {
         "type": "lgbm",
         "params": {
-            "n_estimators": 1000,
+            "n_estimators": 2000,
             "learning_rate": 0.05,
             "max_depth": 7,
             "num_leaves": 31,
@@ -535,8 +536,13 @@ def train_single_model(df_feat, cfg, model_name):
             print(f"  ⚠️  Warning: Possible overfitting detected (train RMSE much lower than val)")
         
         # Step 8: Combine all predictions for saving
+        train_sdf = spark.createDataFrame(train_pdf).withColumn("split", F.lit("train"))
+        val_sdf   = spark.createDataFrame(val_pdf).withColumn("split", F.lit("validation"))
+        test_sdf  = spark.createDataFrame(test_pdf).withColumn("split", F.lit("test"))
+        pred_spark = train_sdf.unionByName(val_sdf).unionByName(test_sdf)
+
         combined_predictions = pd.concat([train_pdf, val_pdf, test_pdf], ignore_index=True)
-        pred_spark = spark.createDataFrame(combined_predictions)
+        # pred_spark = spark.createDataFrame(combined_predictions)
 
         # Step 9: Log model with signature
         print("→ Logging model to MLflow...")
@@ -546,7 +552,7 @@ def train_single_model(df_feat, cfg, model_name):
             train_pdf[feature_cols], model.predict(train_pdf[feature_cols])
         )
         mlflow.lightgbm.log_model(
-            model, name=f"model_{model_name}", signature=signature
+            model, name=f"model_{model_name}".replace("/", "_"), signature=signature
         )
 
         # Step 10: Save predictions (train, val, and test)
@@ -646,7 +652,7 @@ def train_models_by_group(df_feat, cfg):
 # MAIN EXECUTION
 # ========================================
 from pyspark.sql.functions import col
-df_raw = df_raw.filter(col("family") == "BEVERAGES")
+# df_raw = df_raw.filter(col("family") == "BEVERAGES")
 
 
 from pyspark.sql.functions import col
@@ -657,10 +663,7 @@ from pyspark.sql.functions import col
 mlflow.set_tracking_uri("databricks")
 mlflow.set_experiment("/Users/daniel.more.torres@gmail.com/favorita_lgbm_regressor")
 
-<<<<<<< Updated upstream
 # End any existing runs
-=======
->>>>>>> Stashed changes
 mlflow.end_run()
 
 with mlflow.start_run(run_name="favorita_lgbm_multi_model"):
@@ -687,7 +690,6 @@ with mlflow.start_run(run_name="favorita_lgbm_multi_model"):
     )
     print(f"✓ Features built: {len(df_feat.columns)} columns")
 
-<<<<<<< Updated upstream
     # Log dataset info
     date_col = cfg["data"]["date_col"]
     max_date = df_feat.select(F.max(date_col)).collect()[0][0]
@@ -696,8 +698,6 @@ with mlflow.start_run(run_name="favorita_lgbm_multi_model"):
     mlflow.log_param("data_start_date", str(min_date))
     mlflow.log_param("data_end_date", str(max_date))
     mlflow.log_param("total_rows", df_feat.count())
-=======
- >>>>>>> Stashed changes
 
     # Step 2: Train models based on strategy
     # The train/val/test split happens INSIDE train_single_model()
